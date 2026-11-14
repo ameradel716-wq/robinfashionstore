@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>ROBIN STORE</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}body{background:#fff;color:#111;padding-bottom:70px}
+header{position:sticky;top:0;background:#fff;z-index:10;display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #eee}
+.logo{color:#FF7A1A;font-size:30px;font-weight:900}.icon-btn{font-size:22px;background:none;border:none;cursor:pointer;position:relative}
+.badge{position:absolute;top:-4px;left:-6px;background:#FF7A1A;color:#fff;font-size:10px;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.login-btn{background:#111;color:#fff;border:none;padding:7px 12px;border-radius:8px;font-weight:bold;cursor:pointer;font-size:12px}
+.add-btn{background:#FF7A1A;color:#fff;border:none;padding:10px 14px;border-radius:10px;font-weight:900;cursor:pointer;width:calc(100% - 28px);margin:10px 14px;display:none}
+.banner{margin:14px;background:#FFEFE6;border-radius:16px;padding:20px;display:flex;gap:14px;align-items:center}
+.banner h2{font-size:19px}.banner b{color:#FF7A1A;font-size:22px}.banner button{background:#FF7A1A;color:#fff;border:none;padding:10px 18px;border-radius:10px;font-weight:900;margin-top:10px;cursor:pointer}
+.banner img{width:110px;height:110px;object-fit:cover;border-radius:12px}
+.filters{display:flex;gap:8px;overflow-x:auto;padding:0 14px 10px}.filters button{white-space:nowrap;padding:8px 18px;border-radius:20px;border:1px solid #ddd;background:#fff;font-weight:bold;cursor:pointer}
+.filters button.active{background:#FF7A1A;color:#fff;border-color:#FF7A1A}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 14px 20px}.card{cursor:pointer}.card .img{position:relative;background:#F8F8F8;border-radius:12px;overflow:hidden;aspect-ratio:.85}.card img{width:100%;height:100%;object-fit:cover}
+.sale{position:absolute;top:8px;right:8px;background:#FF7A1A;color:#fff;font-size:10px;font-weight:900;padding:3px 8px;border-radius:6px}
+.fav{position:absolute;top:8px;left:8px;background:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.card h3{font-size:12px;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.price{color:#FF7A1A;font-weight:900;font-size:14px}.old{color:#999;font-size:11px;text-decoration:line-through}
+.page{display:none;padding:14px}.page.active{display:block}
+.cart-row{display:flex;gap:10px;border:1px solid #ddd;border-radius:12px;padding:10px;margin-bottom:10px;align-items:center}.cart-row img{width:70px;height:70px;object-fit:cover;border-radius:8px}
+.qty{display:flex;align-items:center;gap:8px;margin-top:6px}.qty button{width:26px;height:26px;border:1px solid #ccc;border-radius:6px;background:#fff;cursor:pointer}.qty button.plus{background:#FF7A1A;color:#fff;border-color:#FF7A1A}
+.del{color:red;font-size:24px;background:none;border:none;cursor:pointer}.total{font-weight:900;font-size:18px;display:flex;justify-content:space-between;margin:14px 0}
+.checkout{width:100%;background:#FF7A1A;color:#fff;border:none;padding:14px;border-radius:10px;font-weight:900;font-size:16px;cursor:pointer}
+.drawer{position:fixed;top:0;right:-280px;width:280px;height:100%;background:#fff;z-index:99;transition:.3s;overflow-y:auto}.drawer.open{right:0}.drawer-head{background:#FFEFE6;padding:20px;text-align:center}.drawer-head img{width:80px;height:80px;border-radius:50%;border:3px solid #FF7A1A;object-fit:cover}
+.drawer a{display:flex;gap:10px;padding:12px 16px;text-decoration:none;color:#111;font-weight:bold;border-bottom:1px solid #f2f2f2;cursor:pointer}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;z-index:90}.overlay.show{display:block}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;justify-content:center;z-index:100}.modal.show{display:flex}.modal-box{background:#fff;width:100%;max-width:480px;border-radius:20px 20px 0 0;padding:16px;max-height:92vh;overflow-y:auto}.modal-box img{width:100%;height:280px;object-fit:cover;border-radius:12px}
+.size-btn{padding:8px 12px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;margin:3px}.size-btn.active{background:#FF7A1A;color:#fff}
+.pay-box{border:1px solid #eee;border-radius:12px;padding:14px;margin-bottom:12px}.copy{float:left;background:#111;color:#fff;border:none;padding:5px 10px;border-radius:6px;cursor:pointer}
+.bottom{position:fixed;bottom:0;right:0;left:0;background:#fff;display:flex;border-top:1px solid #eee;z-index:10}.bottom button{flex:1;padding:10px 0;border:none;background:none;font-weight:bold;color:#888;cursor:pointer}.bottom button.active{color:#FF7A1A}
+input,select,textarea{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin:6px 0;font-size:14px}label{font-weight:bold;font-size:13px}
+.thumb{width:70px;height:70px;object-fit:cover;border-radius:8px;margin:3px}.gallery-dots{text-align:center;margin:6px}.gallery-dots span{font-size:20px;cursor:pointer;color:#ccc}.gallery-dots span.active{color:#FF7A1A}
+</style>
+</head>
+<body>
+<div class="overlay" id="overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer"><div class="drawer-head"><img src="https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=200"><h3>ROBIN STORE</h3></div>
+<a onclick="goHome('All')">🏠 Home</a><a onclick="goHome('Handbags')">👜 Handbag</a><a onclick="goHome('Shoes')">👟 Shoes</a><a onclick="goHome('Socks')">🧦 Socks</a><a onclick="goHome('Belts')">⭕ Belts</a><a onclick="goHome('Accessories')">⌚ Accessories</a><a onclick="openPage('contact')">📞 Contact Us</a>
+<a href="https://www.facebook.com/share/1DZPSuRmmY/?mibextid=wwXIfr" target="_blank">📘 Facebook</a><a href="https://www.instagram.com/robin_fashion_store?stkn=a292eDhxdWExYmJ4&utm_source=qr" target="_blank">📸 Instagram</a><a href="https://www.tiktok.com/@robinfashionstore1?_r=1&_t=ZS-9AAOoliXXkK" target="_blank">🎵 TikTok</a></div>
+
+<header><button class="icon-btn" onclick="openDrawer()">☰</button><div class="logo">Robin</div><div style="flex:1"></div><button class="login-btn" id="loginBtn" onclick="openLogin()">Login</button><button class="icon-btn" onclick="showPage('wishlist')">❤️</button><button class="icon-btn" onclick="showPage('cart')">🛍️ <span class="badge" id="cartCount">0</span></button></header>
+
+<div id="homePage">
+<div class="banner"><div style="flex:1"><h2>Autumn Collection<br>2027</h2><div>DISCOUNT <b>30%</b></div><button onclick="setFilter('Sale')">Sale 30%</button></div><img id="bannerImg" src="https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400"></div>
+<button class="add-btn" id="addBtn" onclick="openAdd()">+ إضافة منتج</button>
+<div class="filters" id="filters"></div><div class="grid" id="grid"></div></div>
+
+<div class="page" id="wishlistPage"><h2>Wishlist ❤️</h2><div class="grid" id="wishGrid" style="padding-top:14px"></div></div>
+<div class="page" id="cartPage"><h2>Cart 🛒</h2><div id="cartList" style="margin-top:14px"></div><div id="cartFooter"></div></div>
+<div class="page" id="contactPage"><h2>Contact Us</h2><p style="margin:14px 0;line-height:1.8">ROBIN STORE - رقم 1 في مصر في الشنط والشوزات المستوردة منذ 2009 ❤️<br>خامات مستوردة 100%، وشحن لكل المحافظات.</p>
+<div class="pay-box"><b>WhatsApp 1:</b> 01212713421<br><br><button class="checkout" onclick="window.open('https://wa.me/201212713421','_blank')">كلمينا واتساب 1</button></div>
+<div class="pay-box"><b>WhatsApp 2:</b> 01275166778<br><br><button class="checkout" onclick="window.open('https://wa.me/201275166778','_blank')">كلمينا واتساب 2</button></div>
+<div class="pay-box">📘 <a href="https://www.facebook.com/share/1DZPSuRmmY/?mibextid=wwXIfr" target="_blank">Facebook</a><br><br>📸 <a href="https://www.instagram.com/robin_fashion_store?stkn=a292eDhxdWExYmJ4&utm_source=qr" target="_blank">Instagram</a><br><br>🎵 <a href="https://www.tiktok.com/@robinfashionstore1?_r=1&_t=ZS-9AAOoliXXkK" target="_blank">TikTok</a></div></div>
+
+<div class="page" id="checkoutPage"><h2>Checkout - الدفع</h2><div id="checkoutSummary" style="margin:14px 0"></div>
+<div class="pay-box"><b>انستا باي / فودافون كاش 1</b><button class="copy" onclick="copyText('01099996998')">نسخ</button><h3>01099996998</h3></div>
+<div class="pay-box"><b>انستا باي / فودافون كاش 2</b><button class="copy" onclick="copyText('01025333025')">نسخ</button><h3>01025333025</h3></div>
+<button class="checkout" onclick="window.open('https://wa.me/201212713421?text='+encodeURIComponent('أنا حولت، عايز أأكد الأوردر - ROBIN'),' _blank')">تأكيد على الواتساب ✅</button>
+<button onclick="showPage('home')" style="width:100%;margin-top:10px;padding:12px;border:1px solid #ddd;background:#fff;border-radius:10px">رجوع</button></div>
+
+<!-- LOGIN -->
+<div class="modal" id="loginModal"><div class="modal-box" style="border-radius:20px"><h3>Login - دخول الأدمن</h3><p style="color:#666;font-size:13px">اكتب الجيميل بتاعك عشان تضيف منتجات</p><label>الجيميل</label><input id="emailInput" placeholder="ameradel716@gmail.com" value="ameradel716@gmail.com"><button class="checkout" onclick="doLogin()">دخول</button><button onclick="closeLogin()" style="width:100%;margin-top:8px;padding:10px;border:1px solid #ddd;background:#fff;border-radius:10px">إلغاء</button></div></div>
+
+<!-- ADD PRODUCT -->
+<div class="modal" id="addModal"><div class="modal-box"><button onclick="closeAdd()" style="float:left;border:none;background:none;font-size:22px">✕</button><h3>إضافة منتج جديد</h3>
+<label>اسم المنتج</label><input id="pName" placeholder="مثال: ROBIN Classic Tote">
+<label>اسم الصنف اللي هيتحط فيه</label><input id="pCat" placeholder="اكتب: Handbags أو Shoes أو Socks أو Belts أو Accessories أو اسم جديد" list="cats"><datalist id="cats"><option value="Handbags"><option value="Shoes"><option value="Socks"><option value="Belts"><option value="Accessories"></datalist>
+<label>السعر قبل الخصم</label><input id="pOld" type="number" placeholder="2500">
+<label>السعر بعد الخصم</label><input id="pPrice" type="number" placeholder="1500">
+<label>وصف المنتج</label><textarea id="pDesc" placeholder="خامة مستوردة 100%"></textarea>
+<label>صور المنتج - اختار 3 أو 4 صور</label><input type="file" id="pImages" accept="image/*" multiple>
+<div id="preview"></div>
+<label>أو لينك صورة (لو عايز تثبت على أي جهاز)</label><input id="pLink" placeholder="https://...">
+<button class="checkout" onclick="saveProduct()">حفظ ونشر المنتج ✅</button></div></div>
+
+<!-- DETAILS -->
+<div class="modal" id="modal"><div class="modal-box"><button onclick="closeModal()" style="float:left;border:none;background:none;font-size:22px">✕</button><img id="mImg"><div class="gallery-dots" id="dots"></div><h3 id="mName" style="margin:10px 0"></h3><p id="mDesc" style="color:#666"></p><div id="mPrice" style="margin:10px 0;font-weight:900;font-size:18px;color:#FF7A1A"></div><div id="sizeArea"></div>
+<div style="display:flex;gap:10px;align-items:center;margin:12px 0"><button onclick="changeQty(-1)" style="width:32px;height:32px">-</button><span id="mQty" style="font-weight:900">1</span><button onclick="changeQty(1)" style="width:32px;height:32px;background:#FF7A1A;color:#fff;border:none;border-radius:6px">+</button></div>
+<button class="checkout" onclick="confirmAdd()">أضف للسلة 🛒</button><button id="delProductBtn" onclick="deleteProduct()" style="display:none;width:100%;margin-top:8px;padding:10px;background:#ffeded;color:red;border:1px solid #ffcccc;border-radius:10px;font-weight:bold">حذف المنتج 🗑️</button></div></div>
+
+<div class="bottom"><button class="active" onclick="showPage('home')">🏠 Home</button><button onclick="showPage('home')">🛍️ Shop</button><button onclick="showPage('wishlist')">❤️ Wishlist</button><button onclick="showPage('cart')">🛒 Cart</button><button onclick="showPage('contact')">👤 Profile</button></div>
+
+<script>
+let defaultProducts=[
+{name:"ROBIN Classic Tote - Beige",price:1500,old:2500,type:"Handbags",images:["https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=500"],desc:"Imported genuine leather 100%."},
+{name:"ROBIN Suede Tote - Camel",price:1500,old:2500,type:"Handbags",images:["https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=500"],desc:"Premium imported suede."},
+{name:"ROBIN Cloud Walk - White",price:1650,old:2450,type:"Shoes",images:["https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500"],desc:"ROBIN Medical Shoe 100% - Memory Foam."},
+{name:"ROBIN Urban Stride - Beige",price:1650,old:2450,type:"Shoes",images:["https://images.unsplash.com/photo-1549298916-b41d501d3772?w=500"],desc:"ROBIN Trendy 2027 - Imported."},
+{name:"ROBIN Cotton Socks - White",price:250,old:350,type:"Socks",images:["https://images.unsplash.com/photo-1586350977771-b3b0abd50c82?w=500"],desc:"ROBIN Imported Cotton 100%."},
+{name:"ROBIN Leather Belt - Black",price:200,old:350,type:"Belts",images:["https://images.unsplash.com/photo-1624222247344-550fb60583dc?w=500"],desc:"ROBIN Imported Leather Belt - 100% genuine."},
+{name:"ROBIN Gold Chain Imported",price:100,old:150,type:"Accessories",images:["https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=500"],desc:"ROBIN Original Imported."},
+];
+let custom=JSON.parse(localStorage.getItem('robin_custom')||'[]');
+let products=[...defaultProducts,...custom];
+let isAdmin=localStorage.getItem('robin_admin')==='1';
+let filter="All", cart=[], favs=new Set(), cur=null, curIdx=-1, curQty=1, curSize=null, curImgIdx=0, tempImages=[];
+function allCats(){let s=new Set(["All","Handbags","Shoes","Socks","Belts","Accessories","Sale"]);products.forEach(p=>s.add(p.type));return [...s]}
+function renderFilters(){let cats=allCats();document.getElementById('filters').innerHTML=cats.map(f=>`<button class="${filter===f?'active':''}" onclick="setFilter('${f}')">${f}</button>`).join('')}
+function setFilter(f){filter=f;renderFilters();renderGrid();showPage('home')}
+function renderGrid(){let list=products.filter(p=> filter==="All"?true: filter==="Sale"?true: p.type===filter);document.getElementById('grid').innerHTML=list.map(p=>{let idx=products.indexOf(p);let priceHtml=p.type==="Belts"?`<div style="font-size:12px;color:#888">اضغط لعرض السعر</div>`:`<div><span class="price">${p.price} LE</span> <span class="old">${p.old} LE</span></div>`;return `<div class="card" onclick="openProduct(${idx})"><div class="img"><img src="${p.images[0]}"><span class="sale">SALE</span><span class="fav" onclick="event.stopPropagation();toggleFav(${idx})">${favs.has(idx)?'❤️':'🤍'}</span></div><h3>${p.name}</h3>${priceHtml}<div style="font-size:11px;color:#888">${p.type} ${p.images.length>1?'• '+p.images.length+' صور':''}</div></div>`}).join('');checkAdmin()}
+function checkAdmin(){document.getElementById('addBtn').style.display=isAdmin?'block':'none';document.getElementById('loginBtn').innerText=isAdmin?'أمير عادل ✅':'Login'}
+function openLogin(){document.getElementById('loginModal').classList.add('show')}function closeLogin(){document.getElementById('loginModal').classList.remove('show')}
+function doLogin(){let e=document.getElementById('emailInput').value.trim().toLowerCase();if(e==="ameradel716@gmail.com"){isAdmin=true;localStorage.setItem('robin_admin','1');closeLogin();renderGrid();alert("أهلا يا أمير عادل ❤️ دلوقتي تقدر تضيف منتجات")}else{alert("الجيميل ده مش الأدمن. ادخل بـ ameradel716@gmail.com")}}
+function openAdd(){document.getElementById('addModal').classList.add('show')}function closeAdd(){document.getElementById('addModal').classList.remove('show')}
+document.getElementById('pImages').addEventListener('change',function(e){tempImages=[];document.getElementById('preview').innerHTML='';[...e.target.files].slice(0,4).forEach(f=>{let r=new FileReader();r.onload=ev=>{tempImages.push(ev.target.result);document.getElementById('preview').innerHTML+=`<img class="thumb" src="${ev.target.result}">`};r.readAsDataURL(f)})});
+function saveProduct(){let name=document.getElementById('pName').value.trim();let type=document.getElementById('pCat').value.trim()||"Handbags";let price=+document.getElementById('pPrice').value||0;let old=+document.getElementById('pOld').value||price;let desc=document.getElementById('pDesc').value||"ROBIN Original Imported.";let link=document.getElementById('pLink').value.trim();let imgs=[...tempImages];if(link)imgs.push(link);if(!name){alert("اكتب اسم المنتج");return}if(!imgs.length){alert("اختار صورة واحدة على الأقل - ممكن 3 أو 4 صور");return}let np={name,price,old,type,images:imgs,desc};custom.push(np);localStorage.setItem('robin_custom',JSON.stringify(custom));products.push(np);tempImages=[];document.getElementById('pName').value='';document.getElementById('pPrice').value='';document.getElementById('pOld').value='';document.getElementById('pDesc').value='';document.getElementById('pLink').value='';document.getElementById('preview').innerHTML='';closeAdd();renderFilters();renderGrid();alert("تم نشر المنتج ✅")}
+function openProduct(i){cur=products[i];curIdx=i;curQty=1;curSize=null;curImgIdx=0;showImg();document.getElementById('mName').innerText=cur.name;document.getElementById('mDesc').innerText=cur.desc;document.getElementById('mPrice').innerText=cur.price+" LE  -  كان "+cur.old+" LE";document.getElementById('mQty').innerText="1";let sa=document.getElementById('sizeArea');if(cur.type==="Shoes"){sa.innerHTML="<b>اختر المقاس (37 - 44):</b><br>"+[37,38,39,40,41,42,43,44].map(s=>`<button class="size-btn" onclick="selectSize(this,${s})">${s}</button>`).join('')}else{sa.innerHTML=""}document.getElementById('delProductBtn').style.display=(isAdmin && curIdx>=defaultProducts.length)?'block':'none';document.getElementById('modal').classList.add('show')}
+function showImg(){document.getElementById('mImg').src=cur.images[curImgIdx];document.getElementById('dots').innerHTML=cur.images.map((_,j)=>`<span class="${j===curImgIdx?'active':''}" onclick="curImgIdx=${j};showImg()">•</span>`).join('');document.getElementById('mImg').onclick=()=>{curImgIdx=(curImgIdx+1)%cur.images.length;showImg()}}
+function deleteProduct(){if(confirm("تحذف المنتج ده؟")){custom.splice(curIdx-defaultProducts.length,1);localStorage.setItem('robin_custom',JSON.stringify(custom));products.splice(curIdx,1);closeModal();renderGrid()}}
+function selectSize(el,s){document.querySelectorAll('.size-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');curSize=s}
+function changeQty(d){curQty=Math.max(1,curQty+d);document.getElementById('mQty').innerText=curQty}
+function confirmAdd(){if(cur.type==="Shoes" && !curSize){alert("اختار المقاس الأول من 37 لحد 44");return}let idx=cart.findIndex(c=>c.name===cur.name && c.size===curSize);if(idx>-1)cart[idx].qty+=curQty;else cart.push({name:cur.name,price:cur.price,img:cur.images[0],size:curSize,qty:curQty});closeModal();updateCart();alert("تمت الإضافة ✅")}
+function closeModal(){document.getElementById('modal').classList.remove('show')}
+function toggleFav(i){favs.has(i)?favs.delete(i):favs.add(i);renderGrid();renderWish()}
+function renderWish(){let list=[...favs].map(i=>products[i]);document.getElementById('wishGrid').innerHTML=list.length?list.map(p=>{let idx=products.indexOf(p);return `<div class="card" onclick="openProduct(${idx})"><div class="img"><img src="${p.images[0]}"></div><h3>${p.name}</h3><div class="price">${p.price} LE</div></div>`}).join(''):"<p>Wishlist is empty ❤️</p>"}
+function updateCart(){let totalQty=cart.reduce((a,c)=>a+c.qty,0);document.getElementById('cartCount').innerText=totalQty;if(!cart.length){document.getElementById('cartList').innerHTML="<p style='text-align:center;font-weight:bold'>Cart is empty 🛒</p>";document.getElementById('cartFooter').innerHTML="";return}document.getElementById('cartList').innerHTML=cart.map((c,i)=>`<div class="cart-row"><img src="${c.img}"><div style="flex:1"><b style="font-size:12px">${c.name}</b>${c.size?`<div style="font-size:11px;color:#888">Size: ${c.size}</div>`:''}<div style="color:#FF7A1A;font-weight:900">${c.price} LE</div><div class="qty"><button onclick="chgQty(${i},-1)">-</button><b>${c.qty}</b><button class="plus" onclick="chgQty(${i},1)">+</button></div></div><button class="del" onclick="delRow(${i})">🗑️</button></div>`).join('');let total=cart.reduce((a,c)=>a+c.price*c.qty,0);document.getElementById('cartFooter').innerHTML=`<div class="total"><span>Total:</span><span>${total} LE</span></div><button class="checkout" onclick="goCheckout()">Checkout Now</button>`}
+function chgQty(i,d){cart[i].qty+=d;if(cart[i].qty<1)cart.splice(i,1);updateCart()}
+function delRow(i){cart.splice(i,1);updateCart();alert("تم الحذف ✅")}
+function goCheckout(){if(!cart.length){alert("السلة فاضية");return}let total=cart.reduce((a,c)=>a+c.price*c.qty,0);document.getElementById('checkoutSummary').innerHTML=cart.map(c=>`${c.name} ${c.size?'(Size '+c.size+')':''} × ${c.qty} = ${c.price*c.qty} LE`).join('<br>')+`<br><b>Total: ${total} LE</b>`;showPage('checkout')}
+function showPage(p){['homePage','wishlistPage','cartPage','contactPage','checkoutPage'].forEach(id=>document.getElementById(id).style.display='none');document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));if(p==='home')document.getElementById('homePage').style.display='block';if(p==='wishlist'){document.getElementById('wishlistPage').style.display='block';document.getElementById('wishlistPage').classList.add('active');renderWish()}if(p==='cart'){document.getElementById('cartPage').style.display='block';document.getElementById('cartPage').classList.add('active');updateCart()}if(p==='contact'){document.getElementById('contactPage').style.display='block';document.getElementById('contactPage').classList.add('active')}if(p==='checkout'){document.getElementById('checkoutPage').style.display='block';document.getElementById('checkoutPage').classList.add('active')}window.scrollTo(0,0)}
+function openPage(p){closeDrawer();showPage(p)}
+function goHome(f){closeDrawer();setFilter(f)}
+function openDrawer(){document.getElementById('drawer').classList.add('open');document.getElementById('overlay').classList.add('show')}function closeDrawer(){document.getElementById('drawer').classList.remove('open');document.getElementById('overlay').classList.remove('show')}
+function copyText(t){navigator.clipboard.writeText(t);alert("تم النسخ: "+t)}
+renderFilters();renderGrid();updateCart();
+setInterval(()=>{let r=Math.floor(Math.random()*products.length);document.getElementById('bannerImg').src=products[r].images[0]},2000);
+</script>
+</body>
+</html>

@@ -148,5 +148,60 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
+  <!-- Robin Auth - متركب على نفس تصميمك من غير ما يغيره -->
+<div id="authModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:999;align-items:center;justify-content:center">
+<div style="background:#fff;color:#111;width:92%;max-width:380px;padding:20px;border-radius:15px;text-align:center">
+<h3 id="authTitle" style="color:#FF7A1A">إنشاء حساب جديد</h3>
+<div id="regFields">
+<input id="regName" placeholder="الاسم بالكامل" style="width:100%;padding:12px;margin:6px 0;border-radius:10px;border:1px solid #ddd">
+<input id="regEmail" placeholder="الجيميل" style="width:100%;padding:12px;margin:6px 0;border-radius:10px;border:1px solid #ddd">
+<input id="regPhone" placeholder="رقم التليفون" style="width:100%;padding:12px;margin:6px 0;border-radius:10px;border:1px solid #ddd">
+<input id="regPass" type="password" placeholder="الباسورد" style="width:100%;padding:12px;margin:6px 0;border-radius:10px;border:1px solid #ddd">
+<button onclick="registerUser()" style="width:100%;padding:13px;background:#FF7A1A;color:#fff;border:none;border-radius:10px;font-weight:900;cursor:pointer">إنشاء الحساب</button>
+<p style="font-size:14px">عندك حساب؟ <span onclick="switchAuth('login')" style="color:#FF7A1A;cursor:pointer;font-weight:bold">سجل دخول</span></p>
+</div>
+<div id="loginFields" style="display:none">
+<input id="loginEmail" placeholder="الجيميل" style="width:100%;padding:12px;margin:6px 0;border-radius:10px;border:1px solid #ddd">
+<input id="loginPass" type="password" placeholder="الباسورد" style="width:100%;padding:12px;margin:6px 0;border-radius:10px;border:1px solid #ddd">
+<button onclick="loginUser()" style="width:100%;padding:13px;background:#111;color:#fff;border:none;border-radius:10px;font-weight:900;cursor:pointer">دخول</button>
+<p style="font-size:14px">معندكش حساب؟ <span onclick="switchAuth('register')" style="color:#FF7A1A;cursor:pointer;font-weight:bold">اعمل حساب جديد</span></p>
+</div>
+<button onclick="closeAuth()" style="background:none;border:none;cursor:pointer">إغلاق ✕</button>
+</div>
+</div>
+
+<div id="adminPanel" style="display:none;position:fixed;inset:0;background:#fff;z-index:1000;overflow:auto;padding:20px;color:#111">
+<h2 style="color:#FF7A1A">👑 أهلاً يا أمير - الأعضاء المسجلين</h2>
+<h3>إجمالي المسجلين: <span id="count">0</span></h3>
+<table style="width:100%;border-collapse:collapse"><thead><tr style="background:#FF7A1A;color:#fff"><th style="padding:10px">الاسم</th><th style="padding:10px">الجيميل / التليفون</th></tr></thead><tbody id="usersList"></tbody></table><br>
+<button onclick="document.getElementById('adminPanel').style.display='none'" style="padding:12px 20px;background:#111;color:#fff;border:none;border-radius:10px">رجوع للموقع</button>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {apiKey:"AIzaSyB45dxtM-b2TWkStel_peRwpTVuoB7184o",authDomain:"robin-fashion.firebaseapp.com",projectId:"robin-fashion",storageBucket:"robin-fashion.firebasestorage.app",messagingSenderId:"432060007786",appId:"1:432060007786:web:f1cac9ea64e04266699113",measurementId:"G-QDQL55754Q"};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+function openAuth(){document.getElementById('authModal').style.display='flex'}
+function closeAuth(){document.getElementById('authModal').style.display='none'}
+function switchAuth(t){document.getElementById('authTitle').innerText=t==='login'?'تسجيل دخول':'إنشاء حساب جديد';document.getElementById('regFields').style.display=t==='login'?'none':'block';document.getElementById('loginFields').style.display=t==='login'?'block':'none'}
+document.querySelectorAll('.login-btn').forEach(b=>{b.onclick=openAuth});
+async function registerUser(){
+let name=document.getElementById('regName').value.trim(),email=document.getElementById('regEmail').value.trim().toLowerCase(),phone=document.getElementById('regPhone').value.trim(),pass=document.getElementById('regPass').value.trim();
+if(!name||!email||!phone||!pass) return alert("كمل كل البيانات");
+await db.collection("users").doc(email).set({name,email,phone,pass,createdAt:new Date()});
+localStorage.setItem("robin_user",email); alert("تم إنشاء حسابك يا "+name); closeAuth();
+}
+async function loginUser(){
+let email=document.getElementById('loginEmail').value.trim().toLowerCase(),pass=document.getElementById('loginPass').value.trim();
+if(pass==="716"){document.getElementById('authModal').style.display='none';document.getElementById('adminPanel').style.display='block';loadUsers();return;}
+let doc=await db.collection("users").doc(email).get();
+if(!doc.exists) return alert("الحساب مش موجود، اعمل حساب جديد الأول");
+if(doc.data().pass!==pass) return alert("الباسورد غلط");
+localStorage.setItem("robin_user",email); alert("أهلاً بيك يا "+doc.data().name); closeAuth();
+}
+async function loadUsers(){let s=await db.collection("users").get();document.getElementById('count').innerText=s.size;let l=document.getElementById('usersList');l.innerHTML="";s.forEach(d=>{let u=d.data();l.innerHTML+=`<tr><td style="padding:10px;border-bottom:1px solid #ddd">${u.name}</td><td style="padding:10px;border-bottom:1px solid #ddd">${u.email}<br>${u.phone}</td></tr>`})}
+</script>
 </body>
 </html>

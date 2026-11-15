@@ -127,27 +127,6 @@ function copyText(t){navigator.clipboard.writeText(t);alert("تم النسخ: "+
 renderFilters();renderGrid();updateCart();
 setInterval(()=>{let r=Math.floor(Math.random()*products.length);document.getElementById('bannerImg').src=products[r].images[0]},2000);
 </script>
-  // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyB45dxtM-b2TWkStel_peRwpTVuoB7184o",
-  authDomain: "robin-fashion.firebaseapp.com",
-  projectId: "robin-fashion",
-  storageBucket: "robin-fashion.firebasestorage.app",
-  messagingSenderId: "432060007786",
-  appId: "1:432060007786:web:f1cac9ea64e04266699113",
-  measurementId: "G-QDQL557S4Q"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
   <!-- Robin Auth - متركب على نفس تصميمك من غير ما يغيره -->
 <div id="authModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:999;align-items:center;justify-content:center">
 <div style="background:#fff;color:#111;width:92%;max-width:380px;padding:20px;border-radius:15px;text-align:center">

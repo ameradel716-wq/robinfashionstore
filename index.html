@@ -86,7 +86,7 @@ let products=[...defaultProducts,...custom];
 let isAdmin=localStorage.getItem('robin_admin')==='1' || localStorage.getItem('robin_user')===ADMIN_EMAIL;
   // تحميل منتجات المدير لكل الناس
 db.collection('products').onSnapshot(snap=>{
-  let cloud = snap.docs.map(d=>d.data());
+  let cloud = snap.docs.map(d=>({id:d.id, ...d.data()}));
   products = [...defaultProducts, ...custom, ...cloud];
   renderGrid();
 });

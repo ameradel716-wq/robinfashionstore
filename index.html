@@ -132,7 +132,7 @@ renderFilters();renderGrid();updateCart();checkAdmin();showPage('home');
 if(!localStorage.getItem('robin_user')){document.getElementById('welcomePage').classList.add('show')}
 setInterval(()=>{let r=Math.floor(Math.random()*products.length);document.getElementById('bannerImg').src=products[r].images[0]},2000);
 </script>
-<!-- ROBIN CHAT - Firebase - جديد - من غير زرار ادمن -->
+<!-- ROBIN CHAT - FIXED V2 -->
 <style>
 #robinChatBtn{position:fixed;bottom:80px;right:15px;z-index:9999;width:58px;height:58px;border-radius:50%;background:#111;color:#fff;border:none;font-size:26px;cursor:pointer;box-shadow:0 5px 20px rgba(0,0,0,.3)}
 #robinChatBadge{position:absolute;top:-5px;left:-5px;background:#FF7A1A;color:#fff;min-width:22px;height:22px;border-radius:50%;font-size:12px;display:none;align-items:center;justify-content:center;font-weight:900;padding:0 4px}
@@ -142,7 +142,7 @@ setInterval(()=>{let r=Math.floor(Math.random()*products.length);document.getEle
 #robinChatMsgs{flex:1;padding:12px;overflow-y:auto;background:#f7f7f7;display:flex;flex-direction:column;gap:8px}
 .msg{max-width:82%;padding:9px 12px;border-radius:14px;font-size:14px;word-break:break-word}
 .msg.me{background:#111;color:#fff;align-self:flex-end}
-.msg.admin{background:#fff;border:1px solid #ddd;align-self:flex-start}
+.msg.other{background:#fff;border:1px solid #ddd;align-self:flex-start}
 #robinChatInput{display:flex;gap:6px;padding:10px;border-top:1px solid #eee}
 #robinChatInput input{flex:1;padding:11px;border:1px solid #ddd;border-radius:10px}
 #robinChatInput button{background:#FF7A1A;color:#fff;border:none;padding:11px 16px;border-radius:10px;font-weight:900}
@@ -167,80 +167,115 @@ function robinGetChatId(){
 function robinGetName(){ return localStorage.getItem('robin_name') || localStorage.getItem('robin_chat_name') || 'زبون'; }
 let robinMyId = robinGetChatId();
 let robinMyName = robinGetName();
-let robinAdminViewing = robinMyId;
 let robinIsAdmin = localStorage.getItem('robin_admin')==='1' || localStorage.getItem('robin_user')==='ameradel716@gmail.com';
+// المدير مالهوش محادثة خاصة - لازم يختار زبون
+let robinAdminViewing = localStorage.getItem('robin_admin_viewing') || null;
 let robinUnsub = null;
+let robinLastCount = 0;
+
 if(robinIsAdmin){ document.getElementById('robinChatTitle').textContent = 'ROBIN - المدير 👑 - اختار زبون من لوحة التحكم'; }
+
 function robinListen(){
   if(robinUnsub) robinUnsub();
   let box = document.getElementById('robinChatMsgs');
-  box.innerHTML = '<div style="text-align:center;color:#888;font-size:13px;margin-top:20px">اهلا بيك في ROBIN 👑<br>ابعت رسالتك وهنرد عليك على طول</div>';
-  let q = db.collection('robin_chats').where('chatId','==', robinAdminViewing).orderBy('time');
-  robinUnsub = q.onSnapshot(snap=>{
+  let targetId = robinIsAdmin ? robinAdminViewing : robinMyId;
+  if(robinIsAdmin && !targetId){
+    box.innerHTML='<div style="text-align:center;color:#888;font-size:13px;margin-top:20px">اختار زبون من لوحة التحكم<br>ودوس افتح ورد 👑</div>';
+    return;
+  }
+  box.innerHTML='<div style="text-align:center;color:#888;font-size:13px;margin-top:20px">جاري تحميل الرسايل...</div>';
+  // من غير orderBy عشان Firestore مايطلبش Index - الترتيب هنعمله هنا
+  robinUnsub = db.collection('robin_chats').where('chatId','==', targetId).onSnapshot(snap=>{
+    let arr=[];
+    snap.forEach(doc=>{ arr.push(doc.data()); });
+    arr.sort((a,b)=> (a.time||0)-(b.time||0));
     box.innerHTML='';
-    if(snap.empty){ box.innerHTML='<div style="text-align:center;color:#888;font-size:13px;margin-top:20px">اهلا بيك في ROBIN 👑<br>ابعت رسالتك وهنرد عليك على طول</div>'; return; }
-    snap.forEach(doc=>{
-      let m = doc.data();
-      let d = document.createElement('div');
-      d.className = 'msg ' + (m.from==='me' ? 'me' : 'admin');
-      d.textContent = robinIsAdmin && m.from==='me' ? m.name+': '+m.text : m.text;
+    if(!arr.length){ box.innerHTML='<div style="text-align:center;color:#888;font-size:13px;margin-top:20px">اهلا بيك في ROBIN 👑<br>ابعت رسالتك وهنرد عليك على طول</div>'; robinLastCount=0; return; }
+    // اشعار لو في رسالة جديدة
+    if(arr.length > robinLastCount && robinLastCount!==0){
+      let last = arr[arr.length-1];
+      let isMine = robinIsAdmin ? (last.from==='admin') : (last.from==='me');
+      if(!isMine){
+        try{ new Audio('https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3').play(); }catch(e){}
+        if(Notification.permission==='granted') new Notification('ROBIN - رسالة جديدة', {body: last.text});
+        let b=document.getElementById('robinChatBadge'); b.style.display='flex'; b.textContent='1';
+      }
+    }
+    robinLastCount = arr.length;
+    arr.forEach(m=>{
+      let d=document.createElement('div');
+      let isMine = robinIsAdmin ? (m.from==='admin') : (m.from==='me');
+      d.className='msg '+(isMine?'me':'other');
+      // المدير يشوف اسم الزبون، الزبون يشوف الرد بس
+      if(robinIsAdmin && !isMine) d.textContent = m.name+': '+m.text;
+      else d.textContent = m.text;
       box.appendChild(d);
-      if(robinIsAdmin && m.from==='me' && Date.now() - m.time < 8000){
-        try{ new Audio('https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3').play(); }catch(e){}
-        if(Notification.permission==='granted') new Notification('ROBIN - رسالة جديدة من '+m.name, {body: m.text});
-        let b = document.getElementById('robinChatBadge'); b.style.display='flex'; b.textContent = (parseInt(b.textContent||'0')+1);
-      }
-      if(!robinIsAdmin && m.from==='admin' && Date.now() - m.time < 8000){
-        try{ new Audio('https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3').play(); }catch(e){}
-        if(Notification.permission==='granted') new Notification('ROBIN رد عليك 👑', {body: m.text});
-      }
     });
     box.scrollTop = box.scrollHeight;
-  });
+  }, err=>{ box.innerHTML='<div style="text-align:center;color:red">مشكلة في التحميل - دوس تحديث</div>'; });
 }
+
 async function robinSend(){
-  let inp = document.getElementById('robinMsgInput');
+  let inp=document.getElementById('robinMsgInput');
   if(!inp.value.trim()) return;
-  if(!localStorage.getItem('robin_name') && !localStorage.getItem('robin_chat_name')){
-    let n = prompt('اكتب اسمك عشان نعرف نرد عليك:') || 'زبون';
-    localStorage.setItem('robin_chat_name', n); robinMyName = n;
+  if(robinIsAdmin && !robinAdminViewing){ alert('اختار زبون الاول من لوحة التحكم ودوس افتح ورد'); return; }
+  if(!robinIsAdmin && !localStorage.getItem('robin_name') && !localStorage.getItem('robin_chat_name')){
+    let n=prompt('اكتب اسمك عشان نعرف نرد عليك:')||'زبون';
+    localStorage.setItem('robin_chat_name',n); robinMyName=n;
   }
   await db.collection('robin_chats').add({
     chatId: robinIsAdmin ? robinAdminViewing : robinMyId,
     name: robinIsAdmin ? 'ROBIN (المدير)' : robinMyName,
     from: robinIsAdmin ? 'admin' : 'me',
     text: inp.value.trim(),
-    time: Date.now()
+    time: Date.now(),
+    customerName: robinIsAdmin ? (localStorage.getItem('robin_admin_viewing_name')||'') : robinMyName,
+    customerId: robinIsAdmin ? robinAdminViewing : robinMyId
   });
   inp.value='';
 }
-document.getElementById('robinChatBtn').onclick = ()=>{
+document.getElementById('robinChatBtn').onclick=()=>{
   document.getElementById('robinChatBox').classList.toggle('open');
   document.getElementById('robinChatBadge').style.display='none';
   if(Notification.permission!=='granted') Notification.requestPermission();
 };
-document.getElementById('robinClose').onclick = ()=> document.getElementById('robinChatBox').classList.remove('open');
-document.getElementById('robinMsgInput').addEventListener('keydown', e=>{ if(e.key==='Enter') robinSend(); });
+document.getElementById('robinClose').onclick=()=>document.getElementById('robinChatBox').classList.remove('open');
+document.getElementById('robinMsgInput').addEventListener('keydown',e=>{ if(e.key==='Enter') robinSend(); });
+
 async function robinLoadAdminChats(){
   if(!robinIsAdmin) return;
-  let box = document.getElementById('adminChatsBox');
+  let box=document.getElementById('adminChatsBox');
   if(!box) return;
-  let snap = await db.collection('robin_chats').orderBy('time','desc').limit(100).get();
-  let users = {};
-  snap.forEach(d=>{ let m=d.data(); if(!users[m.chatId]) users[m.chatId]={name:m.name, last:m.text, time:m.time}; });
-  let ids = Object.keys(users);
+  let snap=await db.collection('robin_chats').limit(200).get();
+  let users={};
+  snap.forEach(d=>{
+    let m=d.data();
+    if(!users[m.chatId]) users[m.chatId]={name: m.from==='me' ? m.name : (m.customerName||m.name), last:m.text, time:m.time, customerName: m.customerName||m.name};
+    // دايما احتفظ باسم الزبون الحقيقي مش اسم المدير
+    if(m.from==='me'){ users[m.chatId].name=m.name; users[m.chatId].customerName=m.name; }
+    if(m.time > users[m.chatId].time){ users[m.chatId].last=m.text; users[m.chatId].time=m.time; }
+  });
+  // شيل محادثة المدير نفسه
+  delete users[robinMyId];
+  let ids=Object.keys(users);
   if(!ids.length){ box.innerHTML='<p style="color:#888">لسه مفيش رسايل</p>'; return; }
-  box.innerHTML = ids.map(id=>{
-    let u = users[id];
+  // رتب الاحدث فوق
+  ids.sort((a,b)=> users[b].time - users[a].time);
+  box.innerHTML=ids.map((id,i)=>{
+    let u=users[id];
+    let safeName=(u.customerName||u.name||'زبون').replace(/'/g,"");
     return `<div style="background:#fff;padding:10px;border-radius:10px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
-      <div><b>${u.name}</b><br><span style="font-size:12px;color:#666">${u.last}</span></div>
-      <button onclick="robinOpenChat('${id}','${u.name}')" style="background:#FF7A1A;color:#fff;border:none;padding:8px 12px;border-radius:8px;font-weight:900;cursor:pointer">افتح ورد</button>
+      <div><b>${u.customerName||u.name}</b><br><span style="font-size:12px;color:#666">${u.last}</span></div>
+      <button onclick="robinOpenChat('${id}','${safeName}')" style="background:#FF7A1A;color:#fff;border:none;padding:8px 12px;border-radius:8px;font-weight:900;cursor:pointer">افتح ورد</button>
     </div>`;
   }).join('');
 }
-function robinOpenChat(id, name){
-  robinAdminViewing = id;
-  document.getElementById('robinChatTitle').textContent = 'بترد على: '+name;
+function robinOpenChat(id,name){
+  robinAdminViewing=id;
+  localStorage.setItem('robin_admin_viewing',id);
+  localStorage.setItem('robin_admin_viewing_name',name);
+  document.getElementById('robinChatTitle').textContent='بترد على: '+name;
+  robinLastCount=0;
   robinListen();
   document.getElementById('robinChatBox').classList.add('open');
   window.scrollTo(0,0);

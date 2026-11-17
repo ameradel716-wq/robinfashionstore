@@ -133,5 +133,104 @@ renderFilters();renderGrid();updateCart();checkAdmin();showPage('home');
 if(!localStorage.getItem('robin_user')){document.getElementById('welcomePage').classList.add('show')}
 setInterval(()=>{let r=Math.floor(Math.random()*products.length);document.getElementById('bannerImg').src=products[r].images[0]},2000);
 </script>
+  <!-- ROBIN CHAT - ثابت -->
+<style>
+#robinChatBtn{position:fixed;bottom:20px;right:20px;z-index:9999;width:60px;height:60px;border-radius:50%;background:#111;color:#fff;border:none;font-size:28px;cursor:pointer;box-shadow:0 5px 20px rgba(0,0,0,.3)}
+#robinChatBadge{position:absolute;top:-5px;left:-5px;background:#FF7A1A;color:#fff;width:22px;height:22px;border-radius:50%;font-size:12px;display:none;align-items:center;justify-content:center;font-weight:900}
+#robinChatBox{position:fixed;bottom:90px;right:15px;z-index:9999;width:330px;max-width:92vw;height:480px;max-height:75vh;background:#fff;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.25);display:none;flex-direction:column;overflow:hidden}
+#robinChatBox.open{display:flex}
+#robinChatHead{background:#111;color:#fff;padding:14px;display:flex;justify-content:space-between;align-items:center}
+#robinChatHead b{font-size:15px}
+#robinChatMsgs{flex:1;padding:12px;overflow-y:auto;background:#f7f7f7;display:flex;flex-direction:column;gap:8px}
+.msg{max-width:80%;padding:9px 12px;border-radius:14px;font-size:14px}
+.msg.me{background:#111;color:#fff;align-self:flex-end}
+.msg.admin{background:#fff;border:1px solid #ddd;align-self:flex-start}
+#robinChatInput{display:flex;gap:6px;padding:10px;border-top:1px solid #eee}
+#robinChatInput input{flex:1;padding:11px;border:1px solid #ddd;border-radius:10px}
+#robinChatInput button{background:#FF7A1A;color:#fff;border:none;padding:11px 16px;border-radius:10px;font-weight:900}
+#robinAdminLink{position:fixed;bottom:20px;left:15px;z-index:9999;background:#FF7A1A;color:#fff;padding:8px 12px;border-radius:20px;font-size:12px;font-weight:900;cursor:pointer;border:none}
+</style>
+
+<button id="robinChatBtn">💬<span id="robinChatBadge">0</span></button>
+
+<div id="robinChatBox">
+  <div id="robinChatHead"><b>ROBIN - كلمنا 💬</b><span id="robinClose" style="cursor:pointer">✕</span></div>
+  <div id="robinChatMsgs"></div>
+  <div id="robinChatInput">
+    <input id="robinMsgInput" placeholder="اكتب رسالتك...">
+    <button onclick="robinSend()">ارسال</button>
+  </div>
+</div>
+
+<button id="robinAdminLink" onclick="robinOpenAdmin()">ادمن: المحادثات (<span id="robinAdminCount">0</span>)</button>
+
+<script>
+// --- ROBIN CHAT LOGIC - ثابت ومحفوظ ---
+let robinUserId = localStorage.getItem('robin_chat_id');
+if(!robinUserId){ robinUserId = 'user_'+Date.now()+'_'+Math.floor(Math.random()*9999); localStorage.setItem('robin_chat_id', robinUserId); }
+let robinName = localStorage.getItem('robin_chat_name');
+if(!robinName){ robinName = prompt('اهلا بيك في ROBIN 👑 اكتب اسمك عشان نكلمك:') || 'زبون'; localStorage.setItem('robin_chat_name', robinName); }
+
+function robinGetChats(){ return JSON.parse(localStorage.getItem('robin_all_chats')||'{}'); }
+function robinSaveChats(c){ localStorage.setItem('robin_all_chats', JSON.stringify(c)); }
+
+function robinRender(){
+  let chats = robinGetChats();
+  let my = chats[robinUserId] || [];
+  let box = document.getElementById('robinChatMsgs');
+  box.innerHTML = my.length ? '' : '<div style="text-align:center;color:#888;font-size:13px;margin-top:20px">اهلا بيك في ROBIN 👑<br>ابعت رسالتك وهنرد عليك على طول</div>';
+  my.forEach(m=>{
+    let d=document.createElement('div'); d.className='msg '+(m.from==='me'?'me':'admin'); d.textContent=m.text; box.appendChild(d);
+  });
+  box.scrollTop = box.scrollHeight;
+  // تحديث عدد رسايل الادمن
+  let totalUnread = 0; for(let k in chats){ chats[k].forEach(m=>{ if(m.from==='me' && !m.read) totalUnread++; }); }
+  document.getElementById('robinAdminCount').textContent = totalUnread;
+  let badge = document.getElementById('robinChatBadge');
+  let myUnread = my.filter(m=>m.from==='admin' && !m.read).length;
+  badge.style.display = myUnread>0 ? 'flex':'none'; badge.textContent=myUnread;
+}
+
+function robinSend(){
+  let inp = document.getElementById('robinMsgInput');
+  if(!inp.value.trim()) return;
+  let chats = robinGetChats();
+  if(!chats[robinUserId]) chats[robinUserId]=[];
+  chats[robinUserId].push({from:'me', text:inp.value, name:robinName, time:Date.now(), read:false});
+  robinSaveChats(chats);
+  inp.value='';
+  robinRender();
+  // --- اشعار للادمن ---
+  try{ new Audio('https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3').play(); }catch(e){}
+  if(Notification.permission==='granted'){ new Notification('ROBIN - رسالة جديدة', {body: 'في واحد بيراسلك: '+robinName}); }
+  // هنا هنربط Brevo بعدين عشان يوصلك ايميل
+  alert('تم ارسال رسالتك ✅ هنرد عليك على طول');
+}
+
+document.getElementById('robinChatBtn').onclick = ()=>{
+  document.getElementById('robinChatBox').classList.toggle('open');
+  // علم رسايل الادمن انها اتقرأت
+  let chats = robinGetChats(); let my = chats[robinUserId]||[]; my.forEach(m=>{ if(m.from==='admin') m.read=true; }); robinSaveChats(chats); robinRender();
+  if(Notification.permission!=='granted') Notification.requestPermission();
+};
+document.getElementById('robinClose').onclick = ()=> document.getElementById('robinChatBox').classList.remove('open');
+
+function robinOpenAdmin(){
+  let chats = robinGetChats();
+  let list = Object.keys(chats).map(id=>{
+    let msgs = chats[id]; let name = msgs[0]?.name || id; let last = msgs[msgs.length-1]?.text || '';
+    return id+' | '+name+' | اخر رسالة: '+last;
+  }).join('\n');
+  let id = prompt('المحادثات:\n'+(list||'مفيش رسايل لسه')+'\n\nاكتب رقم المحادثة اللي عايز ترد عليها (انسخ الـ ID):');
+  if(!id || !chats[id]) return;
+  let reply = prompt('رد على '+chats[id][0].name+':');
+  if(!reply) return;
+  chats[id].push({from:'admin', text:reply, time:Date.now(), read:false});
+  chats[id].forEach(m=>{ if(m.from==='me') m.read=true; });
+  robinSaveChats(chats); robinRender(); alert('تم الرد ✅');
+}
+robinRender();
+if(Notification.permission!=='granted') Notification.requestPermission();
+</script>
 </body>
 </html>

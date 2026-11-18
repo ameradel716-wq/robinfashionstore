@@ -72,36 +72,76 @@ const ADMIN_PASS = "01060300297";
 function getLocalUsers(){try{return JSON.parse(localStorage.getItem('robin_users')||'[]')}catch(e){return[]}}
 function saveLocalUser(u){let arr=getLocalUsers();if(arr.find(x=>x.email===u.email)) return false;arr.push(u);localStorage.setItem('robin_users',JSON.stringify(arr));return true}
 function getLocalOrders(){try{return JSON.parse(localStorage.getItem('robin_orders')||'[]')}catch(e){return[]}}
-// ===== ROBIN AUTO PRODUCTS - 181 منتج من صورك =====
-const COUNTS = { bags: 50, belts: 16, shoes: 33, socks: 28, accessorise: 54 };
-function makeProducts(folder, prefix, type, count, price, old, desc){
-  let arr=[];
-  for(let i=1;i<=count;i++){
-    let file = folder + "/" + prefix + " (" + i + ").jpg";
-    arr.push({ name:"ROBIN "+type+" - "+i, price:price, old:old, type:type, images:[encodeURI(file)], desc:desc });
-  }
-  return arr;
-}
-let defaultProducts=[
-  ...makeProducts("bags","bag","Handbags",COUNTS.bags,1500,2500,"ROBIN Imported Bag 100% - خامة مستوردة."),
-  ...makeProducts("belts","belts","Belts",COUNTS.belts,200,350,"ROBIN Imported Leather Belt - جلد طبيعي مستورد."),
-  ...makeProducts("shoes","shoes","Shoes",COUNTS.shoes,1650,2450,"ROBIN Medical Shoe 100% - ميموري فوم."),
-  ...makeProducts("socks","socks","Socks",COUNTS.socks,250,350,"ROBIN Imported Cotton 100% - قطن مستورد."),
-  ...makeProducts("accessorise","accessorise","Accessories",COUNTS.accessorise,100,150,"ROBIN Original Imported."),
+// ===== ROBIN AUTO - بيجيب اسامي الصور الحقيقية من GitHub =====
+let defaultProducts = [];
+let cloudProducts = [];
+const REPO = "ameradel716-wq/robin-fashion";
+const CAT_CONFIG = [
+  { folder:"bags", type:"Handbags", price:1500, old:2500, desc:"ROBIN Imported Bag 100% - خامة مستوردة." },
+  { folder:"belts", type:"Belts", price:200, old:350, desc:"ROBIN Imported Leather Belt - جلد طبيعي مستورد." },
+  { folder:"shoes", type:"Shoes", price:1650, old:2450, desc:"ROBIN Medical Shoe 100% - ميموري فوم." },
+  { folder:"socks", type:"Socks", price:250, old:350, desc:"ROBIN Imported Cotton 100% - قطن مستورد." },
+  { folder:"accessorise", type:"Accessories", price:100, old:150, desc:"ROBIN Original Imported." },
 ];
+function buildFallback(){
+  // لو GitHub API فشل، نجرب كل الاحتمالات
+  const fallbacks = {
+    bags: (i)=>[`bags/bag (${i}).jpg`,`bags/bag (${i}).jpeg`,`bags/bag (${i}).png`,`bags/bags (${i}).jpg`],
+    belts: (i)=>[`belts/belts (${i}).jpg`,`belts/belts (${i}).jpeg`,`belts/belt (${i}).jpg`,`belts/belts (${i}).png`],
+    shoes: (i)=>[`shoes/shoes (${i}).jpg`,`shoes/shoes (${i}).jpeg`,`shoes/shoe (${i}).jpg`,`shoes/shoes (${i}).png`],
+    socks: (i)=>[`socks/socks (${i}).jpg`,`socks/socks (${i}).jpeg`,`socks/sock (${i}).jpg`,`socks/socks (${i}).png`],
+    accessorise: (i)=>[`accessorise/accessorise (${i}).jpg`,`accessorise/accessorise (${i}).jpeg`,`accessorise/accessorise (${i}).png`,`accessorise/accessories (${i}).jpg`,`accessorise/accessories (${i}).jpeg`,`accessorise/accessories (${i}).png`,`accessorise/accessorise (${i}).webp`,`accessorise/accessories (${i}).webp`,`accessorise/accessorise (${i}).JPG`,`accessorise/accessories (${i}).JPG`]
+  };
+  const counts = {bags:50, belts:16, shoes:33, socks:28, accessorise:54};
+  CAT_CONFIG.forEach(c=>{
+    if(defaultProducts.find(p=>p.type===c.type)) return;
+    for(let i=1;i<=counts[c.folder];i++){
+      let imgs = fallbacks[c.folder](i).map(encodeURI);
+      defaultProducts.push({name:`ROBIN ${c.type} - ${i}`, price:c.price, old:c.old, type:c.type, images:imgs, desc:c.desc});
+    }
+  });
+}
+async function loadAllFromGitHub(){
+  for(let c of CAT_CONFIG){
+    try{
+      let res = await fetch(`https://api.github.com/repos/${REPO}/contents/${c.folder}`);
+      let files = await res.json();
+      if(!Array.isArray(files)) continue;
+      let imgs = files.filter(f=>/\.(jpg|jpeg|png|webp|avif)$/i.test(f.name)).sort((a,b)=>a.name.localeCompare(b.name,undefined,{numeric:true}));
+      imgs.forEach((f,idx)=>{
+        defaultProducts.push({name:`ROBIN ${c.type} - ${idx+1}`, price:c.price, old:c.old, type:c.type, images:[encodeURI(c.folder+"/"+f.name)], desc:c.desc});
+      });
+    }catch(e){ console.log("fail",c.folder,e); }
+  }
+  if(!defaultProducts.length) buildFallback();
+  else {
+    // لو فولدر واحد بس فشل (زي accessorise) كمله بالفولباك
+    buildFallback();
+  }
+  rebuildProducts();
+}
+function rebuildProducts(){ products = [...defaultProducts, ...custom, ...cloudProducts]; renderFilters(); renderGrid(); }
+loadAllFromGitHub();
 let custom=JSON.parse(localStorage.getItem('robin_custom')||'[]');
-let products=[...defaultProducts,...custom];
+let products=[];
 let isAdmin=localStorage.getItem('robin_admin')==='1' || localStorage.getItem('robin_user')===ADMIN_EMAIL;
 db.collection('products').onSnapshot(snap=>{
-  let cloud = snap.docs.map(d=>({id:d.id, ...d.data()}));
-  products = [...defaultProducts, ...custom, ...cloud];
-  renderGrid();
+  cloudProducts = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  rebuildProducts();
 });
 let filter="All", cart=[], favs=new Set(), cur=null, curIdx=-1, curQty=1, curSize=null, curImgIdx=0, tempImages=[];
 function allCats(){let s=new Set(["All","Handbags","Shoes","Socks","Belts","Accessories","Scarf","Sale"]);products.forEach(p=>s.add(p.type));return [...s]}
 function renderFilters(){document.getElementById('filters').innerHTML=allCats().map(f=>`<button class="${filter===f?'active':''}" onclick="setFilter('${f}')">${f}</button>`).join('')}
 function setFilter(f){filter=f;renderFilters();renderGrid();showPage('home')}
-function renderGrid(){let list=products.filter(p=> filter==="All"?true: filter==="Sale"?true: p.type===filter);document.getElementById('grid').innerHTML=list.map(p=>{let idx=products.indexOf(p);let priceHtml=p.type==="Belts"?`<div style="font-size:12px;color:#888">اضغط لعرض السعر</div>`:`<div><span class="price">${p.price} LE</span> <span class="old">${p.old} LE</span></div>`;return `<div class="card" onclick="openProduct(${idx})"><div class="img"><img src="${p.images[0]}" onerror="this.closest('.card').style.display='none'"><span class="sale">SALE</span><span class="fav" onclick="event.stopPropagation();toggleFav(${idx})">${favs.has(idx)?'❤️':'🤍'}</span></div><h3>${p.name}</h3>${priceHtml}<div style="font-size:11px;color:#888">${p.type} ${p.images.length>1?'• '+p.images.length+' صور':''}</div></div>`}).join('');checkAdmin()}
+function robinImgOnError(img){
+  try{
+    let arr = JSON.parse(img.dataset.imgs||"[]");
+    let n = parseInt(img.dataset.idx||"0")+1;
+    if(n < arr.length){ img.dataset.idx=n; img.src=arr[n]; }
+    else { img.closest('.card').style.display='none'; }
+  }catch(e){ img.closest('.card').style.display='none'; }
+}
+function renderGrid(){let list=products.filter(p=> filter==="All"?true: filter==="Sale"?true: p.type===filter);document.getElementById('grid').innerHTML=list.map(p=>{let idx=products.indexOf(p);let priceHtml=p.type==="Belts"?`<div style="font-size:12px;color:#888">اضغط لعرض السعر</div>`:`<div><span class="price">${p.price} LE</span> <span class="old">${p.old} LE</span></div>`;let imgsJson = JSON.stringify(p.images).replace(/'/g,"&#39;");return `<div class="card" onclick="openProduct(${idx})"><div class="img"><img src="${p.images[0]}" data-idx="0" data-imgs='${imgsJson}' onerror="robinImgOnError(this)"><span class="sale">SALE</span><span class="fav" onclick="event.stopPropagation();toggleFav(${idx})">${favs.has(idx)?'❤️':'🤍'}</span></div><h3>${p.name}</h3>${priceHtml}<div style="font-size:11px;color:#888">${p.type} ${p.images.length>1?'• '+p.images.length+' صور':''}</div></div>`}).join('');checkAdmin()}
 function checkAdmin(){if(localStorage.getItem('robin_user')===ADMIN_EMAIL){isAdmin=true;localStorage.setItem('robin_admin','1')}document.getElementById('addBtn').style.display=isAdmin?'block':'none';let name=localStorage.getItem('robin_name');let user=localStorage.getItem('robin_user');document.getElementById('loginBtn').innerText=isAdmin?'أمير عادل ✅':name?'أهلاً '+name:'Login';document.getElementById('drawerAdminLinks').style.display=isAdmin?'block':'none';document.getElementById('drawerLogout').style.display=user?'flex':'none';document.getElementById('drawerUser').innerText=user?(isAdmin?'المدير: أمير عادل - '+user:name+' - '+user):'سجل دخول عشان تطلب';let pb=document.getElementById('profileBox');if(pb){pb.innerHTML=user?`<div class="pay-box"><b>أهلاً ${name}</b><br>${user}<br><br><button class="checkout" onclick="doLogout()">تسجيل خروج 🚪</button>${isAdmin?'<button class="checkout" onclick="openAdminPage()" style="margin-top:8px;background:#111">👑 افتح لوحة التحكم - المدير</button>':''}</div>`:`<div class="pay-box">مش مسجل دخول<br><br><button class="checkout" onclick="openLogin()">سجل دخول / اعمل حساب</button></div>`}}
 function doLogout(){localStorage.removeItem('robin_user');localStorage.removeItem('robin_name');localStorage.removeItem('robin_admin');isAdmin=false;checkAdmin();closeDrawer();document.getElementById('welcomePage').classList.add('show');showPage('home');alert('تم تسجيل الخروج ✅')}
 function welcomeGo(mode){document.getElementById('welcomePage').classList.remove('show');switchAuth(mode);document.getElementById('loginModal').classList.add('show')}
@@ -125,7 +165,7 @@ function changeQty(d){curQty=Math.max(1,curQty+d);document.getElementById('mQty'
 function confirmAdd(){if(cur.type==="Shoes" && !curSize){alert("اختار المقاس الأول من 37 لحد 44");return}let idx=cart.findIndex(c=>c.name===cur.name && c.size===curSize);if(idx>-1)cart[idx].qty+=curQty;else cart.push({name:cur.name,price:cur.price,img:cur.images[0],size:curSize,qty:curQty});closeModal();updateCart();alert("تمت الإضافة ✅")}
 function closeModal(){document.getElementById('modal').classList.remove('show')}
 function toggleFav(i){favs.has(i)?favs.delete(i):favs.add(i);renderGrid();renderWish()}
-function renderWish(){let list=[...favs].map(i=>products[i]);document.getElementById('wishGrid').innerHTML=list.length?list.map(p=>{let idx=products.indexOf(p);return `<div class="card" onclick="openProduct(${idx})"><div class="img"><img src="${p.images[0]}" onerror="this.closest('.card').style.display='none'"></div><h3>${p.name}</h3><div class="price">${p.price} LE</div></div>`}).join(''):"<p>Wishlist is empty ❤️</p>"}
+function renderWish(){let list=[...favs].map(i=>products[i]);document.getElementById('wishGrid').innerHTML=list.length?list.map(p=>{let idx=products.indexOf(p);return `<div class="card" onclick="openProduct(${idx})"><div class="img"><img src="${p.images[0]}" data-idx="0" data-imgs='${JSON.stringify(p.images).replace(/'/g,"&#39;")}' onerror="robinImgOnError(this)"></div><h3>${p.name}</h3><div class="price">${p.price} LE</div></div>`}).join(''):"<p>Wishlist is empty ❤️</p>"}
 function updateCart(){let totalQty=cart.reduce((a,c)=>a+c.qty,0);document.getElementById('cartCount').innerText=totalQty;if(!cart.length){document.getElementById('cartList').innerHTML="<p style='text-align:center;font-weight:bold'>Cart is empty 🛒</p>";document.getElementById('cartFooter').innerHTML="";return}document.getElementById('cartList').innerHTML=cart.map((c,i)=>`<div class="cart-row"><img src="${c.img}"><div style="flex:1"><b style="font-size:12px">${c.name}</b>${c.size?`<div style="font-size:11px;color:#888">Size: ${c.size}</div>`:''}<div style="color:#FF7A1A;font-weight:900">${c.price} LE</div><div class="qty"><button onclick="chgQty(${i},-1)">-</button><b>${c.qty}</b><button class="plus" onclick="chgQty(${i},1)">+</button></div></div><button class="del" onclick="delRow(${i})">🗑️</button></div>`).join('');let total=cart.reduce((a,c)=>a+c.price*c.qty,0);document.getElementById('cartFooter').innerHTML=`<div class="total"><span>Total:</span><span>${total} LE</span></div><button class="checkout" onclick="goCheckout()">Checkout Now</button>`}
 function chgQty(i,d){cart[i].qty+=d;if(cart[i].qty<1)cart.splice(i,1);updateCart()}
 function delRow(i){cart.splice(i,1);updateCart();alert("تم الحذف ✅")}

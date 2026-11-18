@@ -36,12 +36,11 @@ input,select,textarea{width:100%;padding:12px;border:1px solid #ddd;border-radiu
 .thumb{width:70px;height:70px;object-fit:cover;border-radius:8px;margin:3px}.gallery-dots{text-align:center;margin:6px}.gallery-dots span{font-size:20px;cursor:pointer;color:#ccc}.gallery-dots span.active{color:#FF7A1A}
 .admin-card{background:#fff;border-radius:12px;padding:16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.08)}
 .welcome{position:fixed;inset:0;background:linear-gradient(180deg,#FFF8F0 0%,#FFEEE0 55%,#FFF7EF 100%);z-index:200;display:none;align-items:center;justify-content:center;padding:0;overflow-y:auto}.welcome.show{display:flex}
-.welcome-robin{font-size:64px;font-weight:900;letter-spacing:2px;background:linear-gradient(90deg,#C9A227,#FF7A1A,#E8B500);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
 .welcome-btn1{width:100%;background:#F5852A;color:#fff;border:none;padding:16px;border-radius:14px;font-weight:900;font-size:19px;cursor:pointer;box-shadow:0 8px 20px rgba(245,133,42,.35)}
 .welcome-btn2{width:100%;background:#fff;color:#B98A1A;border:1.5px solid #E8C86A;padding:15px;border-radius:14px;font-weight:900;font-size:19px;cursor:pointer;margin-top:12px}
 .fullimg{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:9999;display:none;align-items:center;justify-content:center;flex-direction:column;padding:10px}.fullimg.show{display:flex}.fullimg img{max-width:100%;max-height:88vh;object-fit:contain;border-radius:10px}.fullimg button{margin-top:12px;background:#FF7A1A;color:#fff;border:none;padding:12px 28px;border-radius:10px;font-weight:900;font-size:16px;cursor:pointer}.zoom-hint{color:#fff;font-size:13px;margin-top:8px;opacity:.8}
-#loginModal{background:linear-gradient(180deg,#FFF8F0,#FFEEE0);align-items:center}
-#loginModal .modal-box{background:#fff;border-radius:24px;padding:22px;box-shadow:0 15px 40px rgba(0,0,0,.12);max-height:94vh}
+#loginModal{background:linear-gradient(rgba(255,248,240,.82),rgba(255,238,224,.82)),url('logo.png.jpeg') center/cover no-repeat;align-items:center}
+#loginModal .modal-box{background:rgba(255,255,255,.96);border-radius:24px;padding:22px;box-shadow:0 15px 40px rgba(0,0,0,.18);max-height:94vh}
 .auth-logo{font-size:38px;font-weight:900;text-align:center;background:linear-gradient(90deg,#C9A227,#FF7A1A);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .auth-input{padding:14px 14px 14px 42px!important;border:1.5px solid #EDE3D3!important;border-radius:12px!important;background:#FFFCF8!important;font-size:15px}
 .auth-field{position:relative}.auth-field span{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:18px}
@@ -49,9 +48,8 @@ input,select,textarea{width:100%;padding:12px;border:1px solid #ddd;border-radiu
 </head>
 <body>
 <div class="welcome" id="welcomePage"><div style="width:100%;max-width:420px;padding:18px 18px 24px;text-align:center">
-<div style="font-size:48px;line-height:1">👑</div><div class="welcome-robin">ROBIN</div>
-<div style="margin:14px 0 0;overflow:hidden;border-radius:18px"><img src="https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=800" onerror="this.src='https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=800'" style="width:100%;height:360px;object-fit:cover;display:block"></div>
-<div style="background:#FFF7EF;padding:18px 14px 4px">
+<img src="logo.png.jpeg" onerror="this.src='https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=800'" style="width:100%;max-width:380px;height:auto;object-fit:cover;border-radius:18px;display:block;margin:0 auto;box-shadow:0 10px 25px rgba(0,0,0,.12)">
+<div style="background:#FFF7EF;padding:18px 14px 4px;margin-top:16px;border-radius:18px">
 <button class="welcome-btn1" onclick="welcomeGo('login')">سجل دخول</button>
 <button class="welcome-btn2" onclick="welcomeGo('register')">إنشاء حساب جديد</button>
 <p style="font-size:11px;color:#999;margin-top:14px">بانشاء حساب، أنت توافق على الشروط وسياسة الخصوصية</p>
@@ -201,7 +199,7 @@ if(!localStorage.getItem('robin_user')){document.getElementById('welcomePage').c
 setInterval(()=>{let r=Math.floor(Math.random()*products.length);if(products[r] && products[r].images[0]) document.getElementById('bannerImg').src=products[r].images[0]},5000);
 </script>
 <style>
-#robinChatBtn{position:fixed;bottom:85px;left:15px;right:auto;z-index:9999;width:58px;height:58px;border-radius:50%;background:#111;color:#fff;border:none;font-size:26px;cursor:pointer;box-shadow:0 5px 20px rgba(0,0,0,.3)}
+#robinChatBtn{position:fixed;bottom:85px;left:15px;right:auto;z-index:9999;width:58px;height:58px;border-radius:50%;background:#111;color:#fff;border:none;font-size:26px;cursor:pointer;box-shadow:0 5px 20px rgba(0,0,0,.3);display:none}
 #robinChatBadge{position:absolute;top:-5px;right:-5px;left:auto;background:#FF7A1A;color:#fff;min-width:22px;height:22px;border-radius:50%;font-size:12px;display:none;align-items:center;justify-content:center;font-weight:900;padding:0 4px}
 #robinChatBox{position:fixed;bottom:150px;left:12px;right:auto;z-index:9999;width:360px;max-width:92vw;height:500px;max-height:72vh;background:#fff;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.25);display:none;flex-direction:column;overflow:hidden;direction:rtl}
 #robinChatBox.open{display:flex}
